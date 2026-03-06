@@ -182,6 +182,15 @@ export function registerDockerRoutes(app: FastifyInstance, gql: GraphQLClient): 
       }
       args.push(image);
 
+      // Pre-create host volume directories and set ownership to container user
+      for (const v of volumes) {
+        const hostPath = v.split(":")[0];
+        if (hostPath) {
+          await import("node:fs/promises").then(fs => fs.mkdir(hostPath, { recursive: true }));
+          await execFileAsync("chown", ["-R", "1000:1000", hostPath]).catch(() => {});
+        }
+      }
+      
       try {
         const { stdout } = await execFileAsync("docker", args);
         const containerId = stdout.trim();
