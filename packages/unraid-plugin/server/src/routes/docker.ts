@@ -139,7 +139,6 @@ export function registerDockerRoutes(app: FastifyInstance, gql: GraphQLClient): 
   app.post<{ Body: DockerCreateBody }>("/api/docker/containers", {
     preHandler: requirePermission(Resource.DOCKER, Action.CREATE),
     handler: async (req, reply) => {
-      console.log("[unraidclaw] docker create body:", JSON.stringify(req.body));
       const {
         image,
         name,
@@ -170,7 +169,6 @@ export function registerDockerRoutes(app: FastifyInstance, gql: GraphQLClient): 
       if (icon) allLabels["net.unraid.docker.icon"] = icon;
       if (webui) allLabels["net.unraid.docker.webui"] = webui;
       for (const [k, v] of Object.entries(labels)) allLabels[k] = v;
-      console.log("[unraidclaw] allLabels:", JSON.stringify(allLabels));
       for (const [k, v] of Object.entries(allLabels)) {
         args.push("--label", `${k}=${v}`);
       }
