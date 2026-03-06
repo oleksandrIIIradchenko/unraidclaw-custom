@@ -172,4 +172,46 @@ export function registerDockerTools(api: any, client: UnraidClient): void {
       }
     },
   });
+
+  api.registerTool({
+    name: "unraid_docker_create",
+    description:
+      "Create and start a new Docker container on the Unraid server. Specify image, optional name, port mappings, volume mounts, environment variables, restart policy, and network.",
+    parameters: {
+      type: "object",
+      properties: {
+        image: { type: "string", description: "Docker image to use (e.g. vikunja/vikunja:latest)" },
+        name: { type: "string", description: "Optional container name" },
+        ports: {
+          type: "array",
+          items: { type: "string" },
+          description: "Port mappings in host:container format (e.g. ['3456:3456'])",
+        },
+        volumes: {
+          type: "array",
+          items: { type: "string" },
+          description: "Volume mounts in host:container format (e.g. ['/mnt/cache/appdata/vikunja:/app/vikunja'])",
+        },
+        env: {
+          type: "array",
+          items: { type: "string" },
+          description: "Environment variables in KEY=VALUE format",
+        },
+        restart: {
+          type: "string",
+          enum: ["no", "always", "unless-stopped", "on-failure"],
+          description: "Restart policy (default: unless-stopped)",
+        },
+        network: { type: "string", description: "Network to attach the container to" },
+      },
+      required: ["image"],
+    },
+    execute: async (_id, params) => {
+      try {
+        return textResult(await client.post("/api/docker/containers", params));
+      } catch (err) {
+        return errorResult(err);
+      }
+    },
+  });
 }
