@@ -22,7 +22,7 @@ UnraidClaw sits between AI agents and your Unraid server, providing a unified RE
 ## Features
 
 - **43 tools** across 11 categories: Docker, VMs, Array, Disks, Shares, System, Notifications, Network, Users, Logs
-- **21 permission keys** in a resource:action matrix, configurable from the WebGUI
+- **22 permission keys** in a resource:action matrix, configurable from the WebGUI
 - **HTTPS** with auto-generated self-signed TLS certificate
 - **SHA-256 API key** authentication
 - **Activity logging** with JSONL format, filter, and search
@@ -67,19 +67,19 @@ All endpoints return a consistent envelope:
 }
 ```
 
-Authentication via `Authorization: Bearer <api-key>` header.
+Authentication via `x-api-key: <api-key>` header.
 
 ### Endpoints
 
 | Category | Method | Endpoint | Permission |
 |----------|--------|----------|------------|
 | **Health** | GET | `/api/health` | none |
-| **Docker** | GET | `/api/docker` | `docker:read` |
-| | GET | `/api/docker/:id` | `docker:read` |
-| | GET | `/api/docker/:id/logs` | `docker:read` |
+| **Docker** | GET | `/api/docker/containers` | `docker:read` |
+| | GET | `/api/docker/containers/:id` | `docker:read` |
+| | GET | `/api/docker/containers/:id/logs` | `docker:read` |
 | | POST | `/api/docker/containers` | `docker:create` |
-| | POST | `/api/docker/:id/:action` | `docker:update` |
-| | DELETE | `/api/docker/:id` | `docker:delete` |
+| | POST | `/api/docker/containers/:id/:action` | `docker:update` |
+| | DELETE | `/api/docker/containers/:id` | `docker:delete` |
 | **VMs** | GET | `/api/vms` | `vms:read` |
 | | GET | `/api/vms/:id` | `vms:read` |
 | | POST | `/api/vms/:id/:action` | `vms:update` |
@@ -113,11 +113,11 @@ Authentication via `Authorization: Bearer <api-key>` header.
 
 ### Docker actions
 
-`POST /api/docker/:id/:action` where action is one of: `start`, `stop`, `restart`, `pause`, `unpause`
+`POST /api/docker/containers/:id/:action` where action is one of: `start`, `stop`, `restart`, `pause`, `unpause`
 
 ### VM actions
 
-`POST /api/vms/:id/:action` where action is one of: `start`, `stop`, `force-stop`, `pause`, `resume`, `reboot`
+`POST /api/vms/:id/:action` where action is one of: `start`, `stop`, `force-stop`, `pause`, `resume`, `reboot`, `reset`
 
 ### Share update
 
@@ -202,11 +202,11 @@ The WebGUI includes presets: **Read Only**, **Docker Manager**, **VM Manager**, 
 
 ```
                                                         GraphQL ──> Unraid API
-                                                       /            (Docker, VMs, Disks, ...)
+                                                       /            (list queries, array, disks)
 ┌─────────────┐     HTTPS      ┌──────────────────┐──+
 │  AI Agent   │ ──────────────> │   UnraidClaw     │   \
-│  (OpenClaw) │  Bearer token   │   (Fastify)      │    CLI ──────> mdcmd, reboot, ip, ...
-└─────────────┘                 │                  │   /
+│  (OpenClaw) │   x-api-key    │   (Fastify)      │    CLI ──────> docker, virsh, mdcmd,
+└─────────────┘                 │                  │   /            reboot, ip, ...
                                 │  - Auth          │──+
                                 │  - Permissions   │   \
                                 │  - Activity Log  │    Filesystem > share configs, syslog,
@@ -224,7 +224,7 @@ This is a pnpm monorepo with three packages:
 ## Security
 
 - API keys are hashed with SHA-256 before storage; the plaintext key is never persisted
-- All requests require authentication via `Authorization: Bearer` header
+- All requests require authentication via `x-api-key` header
 - Every API call is checked against the permission matrix before execution
 - Activity logging records all requests with timestamps, endpoints, and results
 - HTTPS with auto-generated EC (prime256v1) certificates, 10-year validity
