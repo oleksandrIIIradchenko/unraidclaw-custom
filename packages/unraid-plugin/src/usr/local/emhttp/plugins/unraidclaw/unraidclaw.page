@@ -116,7 +116,15 @@ $logFile = "/boot/config/plugins/{$plugin}/activity.jsonl";
             <input type="text" name="HOST" value="<?=$cfg['HOST'] ?? '0.0.0.0'?>">
           </td>
         </tr>
-        <input type="hidden" name="GRAPHQL_URL" value="http://localhost/graphql">
+        <tr>
+          <td>Unraid WebUI Port:</td>
+          <td>
+            <?php $gqlUrl = $cfg['GRAPHQL_URL'] ?? 'http://localhost/graphql'; preg_match('/:(\d+)/', $gqlUrl, $pm); $webPort = $pm[1] ?? '80'; ?>
+            <input type="number" name="UNRAID_WEBUI_PORT" value="<?=$webPort?>" min="1" max="65535">
+            <input type="hidden" name="GRAPHQL_URL" id="graphql_url" value="<?=$gqlUrl?>">
+            <span class="occ-hint">Port of the Unraid WebUI (default: 80)</span>
+          </td>
+        </tr>
         <tr>
           <td>Unraid API Key:</td>
           <td>

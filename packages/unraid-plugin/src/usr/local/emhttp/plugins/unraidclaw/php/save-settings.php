@@ -48,6 +48,16 @@ if (isset($cfg['PORT'])) {
     }
 }
 
+// Build GraphQL URL from Unraid WebUI port
+if (isset($input['UNRAID_WEBUI_PORT'])) {
+    $webPort = (int)$input['UNRAID_WEBUI_PORT'];
+    if ($webPort > 0 && $webPort <= 65535) {
+        $cfg['GRAPHQL_URL'] = $webPort === 80
+            ? 'http://localhost/graphql'
+            : "http://localhost:{$webPort}/graphql";
+    }
+}
+
 // Write config
 $dir = dirname($cfgFile);
 if (!is_dir($dir)) {
