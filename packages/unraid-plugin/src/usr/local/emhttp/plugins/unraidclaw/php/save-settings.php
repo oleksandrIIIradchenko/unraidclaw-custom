@@ -36,6 +36,8 @@ if (file_exists($cfgFile)) {
 // Update from input
 foreach ($fields as $field) {
     if (isset($input[$field])) {
+        // Don't overwrite API key with empty value (preserves existing key)
+        if ($field === 'UNRAID_API_KEY' && $input[$field] === '') continue;
         $cfg[$field] = $input[$field];
     }
 }
@@ -70,6 +72,7 @@ foreach ($cfg as $key => $value) {
 }
 
 $writeResult = @file_put_contents($cfgFile, $content);
+if ($writeResult !== false) @chmod($cfgFile, 0600);
 
 // Manage service
 $serviceOutput = '';

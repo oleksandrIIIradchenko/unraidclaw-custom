@@ -128,8 +128,10 @@ $logFile = "/boot/config/plugins/{$plugin}/activity.jsonl";
         <tr>
           <td>Unraid API Key:</td>
           <td>
-            <input type="password" name="UNRAID_API_KEY" value="<?=$cfg['UNRAID_API_KEY'] ?? ''?>" size="50" autocomplete="off">
-            <span class="occ-hint">API key for authenticating to Unraid's GraphQL API</span>
+            <?php $hasApiKey = !empty($cfg['UNRAID_API_KEY']); ?>
+            <input type="password" name="UNRAID_API_KEY" value="" size="50" autocomplete="off" placeholder="<?=$hasApiKey ? '(key configured - leave blank to keep)' : 'Enter Unraid API key'?>">
+            <?php if ($hasApiKey): ?><span class="occ-badge occ-badge-ok" style="margin-left:8px">Configured</span><?php endif; ?>
+            <span class="occ-hint">API key for authenticating to Unraid's GraphQL API. Leave blank to keep existing key.</span>
           </td>
         </tr>
       </tbody>
@@ -401,9 +403,9 @@ $logFile = "/boot/config/plugins/{$plugin}/activity.jsonl";
 </div>
 </div>
 
+<div id="occ-app" data-csrf="<?=htmlspecialchars($_SERVER['HTTP_CSRF_TOKEN'] ?? '', ENT_QUOTES)?>"></div>
 <script src="/plugins/<?=$plugin?>/javascript/unraidclaw.js?v=<?=filemtime("/usr/local/emhttp/plugins/{$plugin}/javascript/unraidclaw.js")?>"></script>
 <script>
-OCC_CSRF = '<?=$_SERVER['HTTP_CSRF_TOKEN'] ?? ''?>';
 
 function occSwitchTab(name, btn) {
   // Hide all tabs

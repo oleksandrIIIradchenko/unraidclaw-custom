@@ -15,13 +15,52 @@ export function verifyApiKey(plainKey: string, storedHash: string): boolean {
   return timingSafeEqual(a, b);
 }
 
+// Rate limiting for auth failures
+const RATE_LIMIT_WINDOW = 60_000; // 1 minute
+const RATE_LIMIT_MAX = 10; // max failures per window
+const failMap = new Map<string, { count: number; firstAttempt: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = failMap.get(ip);
+  if (!entry || now - entry.firstAttempt > RATE_LIMIT_WINDOW) return false;
+  return entry.count >= RATE_LIMIT_MAX;
+}
+
+function recordAuthFailure(ip: string): void {
+  const now = Date.now();
+  const entry = failMap.get(ip);
+  if (!entry || now - entry.firstAttempt > RATE_LIMIT_WINDOW) {
+    failMap.set(ip, { count: 1, firstAttempt: now });
+  } else {
+    entry.count++;
+  }
+}
+
+// Periodic cleanup of stale entries
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of failMap) {
+    if (now - entry.firstAttempt > RATE_LIMIT_WINDOW) failMap.delete(ip);
+  }
+}, RATE_LIMIT_WINDOW);
+
 export function createAuthHook(config: ServerConfig) {
   return async function authHook(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     // Skip auth for health endpoint
     if (request.url === "/api/health") return;
 
+    if (isRateLimited(request.ip)) {
+      reply.code(429).send({
+        ok: false,
+        error: { code: "RATE_LIMITED", message: "Too many failed attempts. Try again later." },
+      });
+      return;
+    }
+
     const apiKey = request.headers["x-api-key"] as string | undefined;
     if (!apiKey) {
+      recordAuthFailure(request.ip);
       reply.code(401).send({
         ok: false,
         error: { code: "UNAUTHORIZED", message: "Missing x-api-key header" },
@@ -30,6 +69,7 @@ export function createAuthHook(config: ServerConfig) {
     }
 
     if (!verifyApiKey(apiKey, config.apiKeyHash)) {
+      recordAuthFailure(request.ip);
       reply.code(401).send({
         ok: false,
         error: { code: "UNAUTHORIZED", message: "Invalid API key" },

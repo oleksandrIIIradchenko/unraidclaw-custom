@@ -82,7 +82,7 @@ export function loadPermissions(): PermissionMatrix {
   } else {
     ensureFlashDir();
     const defaultMatrix = createDefaultMatrix(false);
-    writeFileSync(PERMISSIONS_FILE, JSON.stringify(defaultMatrix, null, 2), "utf-8");
+    writeFileSync(PERMISSIONS_FILE, JSON.stringify(defaultMatrix, null, 2), { encoding: "utf-8", mode: 0o600 });
     currentPermissions = defaultMatrix;
   }
   return currentPermissions;

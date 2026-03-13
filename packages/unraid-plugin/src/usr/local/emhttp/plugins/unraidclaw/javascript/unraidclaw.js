@@ -31,8 +31,11 @@ var OCC_CATEGORIES = {
   'logs':         ['logs:read']
 };
 
-// ── CSRF token (set from .page files) ──
-var OCC_CSRF = '';
+// ── CSRF token (read from data attribute on demand) ──
+function occGetCsrf() {
+  var el = document.getElementById('occ-app');
+  return el ? el.getAttribute('data-csrf') || '' : '';
+}
 
 // ── Service control ──
 function occServiceControl(action) {
@@ -71,7 +74,7 @@ function occGenerateKey() {
 
   var xhr = new XMLHttpRequest();
   // Use GET to avoid CSRF issues with emhttp
-  xhr.open('GET', '/plugins/unraidclaw/php/generate-key.php?action=generate&csrf_token=' + encodeURIComponent(OCC_CSRF), true);
+  xhr.open('GET', '/plugins/unraidclaw/php/generate-key.php?action=generate&csrf_token=' + encodeURIComponent(occGetCsrf()), true);
   xhr.onreadystatechange = function() {
     if (xhr.readyState === 4) {
       var raw = xhr.responseText || '';

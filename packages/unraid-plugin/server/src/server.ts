@@ -21,9 +21,29 @@ export function createServer(config: ServerConfig, httpsOpts?: { cert: Buffer; k
   const gql = new GraphQLClient(config);
   const activityLogger = new ActivityLogger(config);
 
-  // CORS for WebGUI interaction
+  // CORS - only allow same-origin and local requests
   app.addHook("onRequest", async (request, reply) => {
-    reply.header("Access-Control-Allow-Origin", "*");
+    const origin = request.headers.origin;
+    if (origin) {
+      try {
+        const url = new URL(origin);
+        const host = url.hostname;
+        if (
+          host === "localhost" ||
+          host === "127.0.0.1" ||
+          host === "::1" ||
+          host.startsWith("192.168.") ||
+          host.startsWith("10.") ||
+          host.startsWith("172.") ||
+          host.endsWith(".local")
+        ) {
+          reply.header("Access-Control-Allow-Origin", origin);
+          reply.header("Vary", "Origin");
+        }
+      } catch {
+        // Invalid origin, skip CORS headers
+      }
+    }
     reply.header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
     reply.header("Access-Control-Allow-Headers", "Content-Type, x-api-key");
     if (request.method === "OPTIONS") {

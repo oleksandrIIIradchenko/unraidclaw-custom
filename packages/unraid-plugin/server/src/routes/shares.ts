@@ -45,7 +45,7 @@ function parseCfgFile(path: string): Record<string, string> {
 
 function writeCfgFile(path: string, data: Record<string, string>): void {
   const lines = Object.entries(data).map(([k, v]) => `${k}="${v}"`);
-  writeFileSync(path, lines.join("\n") + "\n", "utf-8");
+  writeFileSync(path, lines.join("\n") + "\n", { encoding: "utf-8", mode: 0o600 });
 }
 
 const LIST_QUERY = `query {
@@ -116,7 +116,7 @@ export function registerShareRoutes(app: FastifyInstance, gql: GraphQLClient): v
         });
       }
 
-      // Validate allocator value
+      // Validate field values
       if (body.allocator && !VALID_ALLOCATORS.includes(body.allocator)) {
         return reply.code(400).send({
           ok: false,
@@ -125,6 +125,32 @@ export function registerShareRoutes(app: FastifyInstance, gql: GraphQLClient): v
             message: `Invalid allocator '${body.allocator}'. Must be one of: ${VALID_ALLOCATORS.join(", ")}`,
           },
         });
+      }
+      if (body.floor !== undefined) {
+        const floor = Number(body.floor);
+        if (!Number.isFinite(floor) || floor < 0 || !Number.isInteger(floor)) {
+          return reply.code(400).send({
+            ok: false,
+            error: { code: "INVALID_VALUE", message: "floor must be a non-negative integer (KiB)" },
+          });
+        }
+      }
+      if (body.splitLevel !== undefined) {
+        const splitLevel = Number(body.splitLevel);
+        if (!Number.isFinite(splitLevel) || !Number.isInteger(splitLevel) || splitLevel < 0) {
+          return reply.code(400).send({
+            ok: false,
+            error: { code: "INVALID_VALUE", message: "splitLevel must be a non-negative integer" },
+          });
+        }
+      }
+      if (body.comment !== undefined) {
+        if (typeof body.comment !== "string" || body.comment.length > 256) {
+          return reply.code(400).send({
+            ok: false,
+            error: { code: "INVALID_VALUE", message: "comment must be a string of 256 characters or fewer" },
+          });
+        }
       }
 
       // Read existing config, apply updates, write back

@@ -75,7 +75,7 @@ export function registerVMRoutes(app: FastifyInstance, gql: GraphQLClient): void
         } catch (err: any) {
           return reply.status(400).send({
             ok: false,
-            error: { code: "VM_ACTION_FAILED", message: err.stderr?.trim() ?? err.message },
+            error: { code: "VM_ACTION_FAILED", message: err.message },
           });
         }
       },
@@ -94,7 +94,7 @@ export function registerVMRoutes(app: FastifyInstance, gql: GraphQLClient): void
       } catch (err: any) {
         return reply.status(400).send({
           ok: false,
-          error: { code: "VM_REMOVE_FAILED", message: err.stderr?.trim() ?? err.message },
+          error: { code: "VM_REMOVE_FAILED", message: err.message },
         });
       }
     },

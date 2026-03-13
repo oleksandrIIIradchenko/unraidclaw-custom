@@ -18,6 +18,19 @@ function escapeXml(s: string): string {
     .replace(/'/g, "&apos;");
 }
 
+// Input validation for docker:create
+const VALID_IMAGE_RE = /^[a-zA-Z0-9][a-zA-Z0-9._\/-]*(:[a-zA-Z0-9._-]+)?$/;
+const VALID_PORT_RE = /^\d{1,5}:\d{1,5}(\/(?:tcp|udp))?$/;
+const VALID_VOLUME_RE = /^\/[^:]+:[^:]+(:(ro|rw))?$/;
+const VALID_ENV_RE = /^[a-zA-Z_][a-zA-Z0-9_]*=.*/;
+const VALID_NETWORK_RE = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/;
+const VALID_NAME_RE = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/;
+const VALID_RESTART_VALUES = new Set(["no", "always", "unless-stopped", "on-failure"]);
+
+function sanitizeFilename(name: string): string {
+  return name.replace(/[^a-zA-Z0-9_.-]/g, "_");
+}
+
 interface DockerCreateBody {
   image: string;
   name?: string;
@@ -94,7 +107,7 @@ export function registerDockerRoutes(app: FastifyInstance, gql: GraphQLClient): 
       } catch (err: any) {
         return reply.status(404).send({
           ok: false,
-          error: { code: "NOT_FOUND", message: err.stderr?.trim() ?? err.message },
+          error: { code: "NOT_FOUND", message: err.message },
         });
       }
     },
@@ -118,7 +131,7 @@ export function registerDockerRoutes(app: FastifyInstance, gql: GraphQLClient): 
         } catch (err: any) {
           return reply.status(400).send({
             ok: false,
-            error: { code: "DOCKER_LOGS_FAILED", message: err.stderr?.trim() ?? err.message },
+            error: { code: "DOCKER_LOGS_FAILED", message: err.message },
           });
         }
       },
@@ -143,7 +156,7 @@ export function registerDockerRoutes(app: FastifyInstance, gql: GraphQLClient): 
         } catch (err: any) {
           return reply.status(400).send({
             ok: false,
-            error: { code: "DOCKER_ACTION_FAILED", message: err.stderr?.trim() ?? err.message },
+            error: { code: "DOCKER_ACTION_FAILED", message: err.message },
           });
         }
       },
@@ -164,7 +177,7 @@ export function registerDockerRoutes(app: FastifyInstance, gql: GraphQLClient): 
       } catch (err: any) {
         return reply.status(400).send({
           ok: false,
-          error: { code: "DOCKER_REMOVE_FAILED", message: err.stderr?.trim() ?? err.message },
+          error: { code: "DOCKER_REMOVE_FAILED", message: err.message },
         });
       }
     },
@@ -186,6 +199,35 @@ export function registerDockerRoutes(app: FastifyInstance, gql: GraphQLClient): 
         icon,
         webui,
       } = req.body;
+
+      // Validate inputs
+      if (!image || !VALID_IMAGE_RE.test(image)) {
+        return reply.status(400).send({ ok: false, error: { code: "VALIDATION_ERROR", message: "Invalid image name" } });
+      }
+      if (name && !VALID_NAME_RE.test(name)) {
+        return reply.status(400).send({ ok: false, error: { code: "VALIDATION_ERROR", message: "Invalid container name (alphanumeric, dots, dashes, underscores)" } });
+      }
+      if (restart && !VALID_RESTART_VALUES.has(restart)) {
+        return reply.status(400).send({ ok: false, error: { code: "VALIDATION_ERROR", message: "Invalid restart policy" } });
+      }
+      if (network && !VALID_NETWORK_RE.test(network)) {
+        return reply.status(400).send({ ok: false, error: { code: "VALIDATION_ERROR", message: "Invalid network name" } });
+      }
+      for (const p of ports) {
+        if (!VALID_PORT_RE.test(p)) {
+          return reply.status(400).send({ ok: false, error: { code: "VALIDATION_ERROR", message: `Invalid port mapping: ${p}` } });
+        }
+      }
+      for (const v of volumes) {
+        if (!VALID_VOLUME_RE.test(v)) {
+          return reply.status(400).send({ ok: false, error: { code: "VALIDATION_ERROR", message: `Invalid volume mapping: ${v}` } });
+        }
+      }
+      for (const e of env) {
+        if (!VALID_ENV_RE.test(e)) {
+          return reply.status(400).send({ ok: false, error: { code: "VALIDATION_ERROR", message: `Invalid env var format (expected KEY=VALUE): ${e.split("=")[0]}` } });
+        }
+      }
 
       const containerName = name ?? image.split("/").pop()?.split(":")[0] ?? "container";
 
@@ -276,14 +318,15 @@ ${volumeConfigs}
 ${envConfigs}
 </Container>`;
 
-        const templatePath = `/boot/config/plugins/dockerMan/templates-user/my-${containerName}.xml`;
-        await writeFile(templatePath, xml, "utf8");
+        const safeContainerName = sanitizeFilename(containerName);
+        const templatePath = `/boot/config/plugins/dockerMan/templates-user/my-${safeContainerName}.xml`;
+        await writeFile(templatePath, xml, { encoding: "utf8", mode: 0o640 });
 
         return reply.send({ ok: true, data: { id: containerId, template: templatePath } });
       } catch (err: any) {
         return reply.status(500).send({
           ok: false,
-          error: { code: "DOCKER_CREATE_FAILED", message: err.stderr?.trim() ?? err.message },
+          error: { code: "DOCKER_CREATE_FAILED", message: err.message },
         });
       }
     },

@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "unraidclaw">
 <!ENTITY author    "emaspa">
-<!ENTITY version   "0.1.25">
+<!ENTITY version   "0.1.26">
 <!ENTITY launch    "Settings/unraidclaw">
 <!ENTITY repo      "emaspa/unraidclaw">
 <!ENTITY pluginURL "https://raw.githubusercontent.com/&repo;/main/packages/unraid-plugin/unraidclaw.plg">
@@ -14,6 +14,18 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.12.0" max="7.99.99" support="https://forums.unraid.net/topic/197498-plugin-support-unraidclaw-ai-agent-gateway-with-permission-control/" description="Permission-enforcing REST API gateway that lets AI agents manage your Unraid server with fine-grained access control.">
 
 <CHANGES>
+### 0.1.26
+- Security: fix command injection in syslog and notification endpoints (execSync to execFileAsync)
+- Security: fix path traversal in notification archive/delete and docker template filename
+- Security: restrict CORS to local network origins only
+- Security: stop exposing Unraid API key in settings page HTML
+- Security: remove internal error details from API error responses
+- Security: add rate limiting on API authentication (10 attempts/min per IP)
+- Security: add input validation on docker:create parameters (image, ports, volumes, env, network)
+- Security: validate share update fields (floor, splitLevel, comment)
+- Security: set restrictive file permissions on config, permissions, and log files
+- Security: enforce strict boolean types in permission saves
+
 ### 0.1.25
 - Add Unraid WebUI Port setting for non-standard port configurations
 - GraphQL URL is now constructed automatically from the port (no more manual URL editing)

@@ -24,7 +24,7 @@ export class ActivityLogger {
   log(entry: ActivityLogEntry): void {
     try {
       this.rotateIfNeeded();
-      appendFileSync(this.logFile, JSON.stringify(entry) + "\n", "utf-8");
+      appendFileSync(this.logFile, JSON.stringify(entry) + "\n", { encoding: "utf-8", mode: 0o600 });
     } catch {
       // Logging should never crash the server
     }

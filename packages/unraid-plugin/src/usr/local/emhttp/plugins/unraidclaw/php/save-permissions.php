@@ -18,11 +18,11 @@ if (!is_array($input)) {
     exit;
 }
 
-// Sanitize: only boolean values with valid key format
+// Sanitize: only actual boolean values with valid key format
 $clean = [];
 foreach ($input as $key => $value) {
-    if (preg_match('/^[a-z_]+:[a-z]+$/', $key)) {
-        $clean[$key] = (bool)$value;
+    if (preg_match('/^[a-z_]+:[a-z]+$/', $key) && is_bool($value)) {
+        $clean[$key] = $value;
     }
 }
 
@@ -32,6 +32,7 @@ if (!is_dir($dir)) {
 }
 
 $result = @file_put_contents($permFile, json_encode($clean, JSON_PRETTY_PRINT));
+if ($result !== false) @chmod($permFile, 0600);
 if ($result !== false) {
     echo json_encode(['success' => true, 'count' => count(array_filter($clean)), 'total' => count($clean)]);
 } else {
