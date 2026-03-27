@@ -3,8 +3,11 @@ import { join, normalize, relative, sep } from "node:path";
 
 export interface BrowseOptions {
   limit?: number;
+  offset?: number;
   includeHidden?: boolean;
   dirsOnly?: boolean;
+  sortBy?: "name" | "size" | "mtime";
+  order?: "asc" | "desc";
 }
 
 export interface BrowseEntry {
@@ -62,8 +65,11 @@ export async function safeResolveUnderRoot(root: string, requestedPath = "/"): P
 
 export async function listDirectory(root: string, requestedPath = "/", options: BrowseOptions = {}) {
   const limit = Math.min(Math.max(Number(options.limit ?? 200), 1), 1000);
+  const offset = Math.max(Number(options.offset ?? 0), 0);
   const includeHidden = options.includeHidden === true;
   const dirsOnly = options.dirsOnly === true;
+  const sortBy = options.sortBy ?? "name";
+  const order = options.order ?? "asc";
 
   const { rootReal, targetReal, normalizedPath } = await safeResolveUnderRoot(root, requestedPath);
   const st = await lstat(targetReal);
@@ -80,15 +86,7 @@ export async function listDirectory(root: string, requestedPath = "/", options: 
     return true;
   });
 
-  filtered.sort((a, b) => {
-    const aDir = a.isDirectory() ? 0 : 1;
-    const bDir = b.isDirectory() ? 0 : 1;
-    if (aDir !== bDir) return aDir - bDir;
-    return a.name.localeCompare(b.name);
-  });
-
-  const slice = filtered.slice(0, limit);
-  const entries = await Promise.all(slice.map(async (d) => {
+  const allEntries = await Promise.all(filtered.map(async (d) => {
     const abs = join(targetReal, d.name);
     try {
       const s = await lstat(abs);
@@ -100,7 +98,7 @@ export async function listDirectory(root: string, requestedPath = "/", options: 
         name: d.name,
         path: normalizedPath === "/" ? `/${d.name}` : `${normalizedPath}/${d.name}`,
         type,
-        sizeBytes: s.isDirectory() ? s.size ?? null : s.size ?? null,
+        sizeBytes: s.size ?? null,
         mtime: s.mtime ? s.mtime.toISOString() : null,
       } satisfies BrowseEntry;
     } catch {
@@ -114,12 +112,37 @@ export async function listDirectory(root: string, requestedPath = "/", options: 
     }
   }));
 
+  allEntries.sort((a, b) => {
+    const dirCmp = (a.type === 'directory' ? 0 : 1) - (b.type === 'directory' ? 0 : 1);
+    const primary = sortBy === 'size'
+      ? (a.sizeBytes ?? -1) - (b.sizeBytes ?? -1)
+      : sortBy === 'mtime'
+        ? (a.mtime ? Date.parse(a.mtime) : 0) - (b.mtime ? Date.parse(b.mtime) : 0)
+        : a.name.localeCompare(b.name);
+    const result = sortBy === 'name'
+      ? (dirCmp !== 0 ? dirCmp : primary)
+      : (primary !== 0 ? primary : (dirCmp !== 0 ? dirCmp : a.name.localeCompare(b.name)));
+    return order === 'desc' ? -result : result;
+  });
+
+  const entries = allEntries.slice(offset, offset + limit);
+  const segments = normalizedPath === '/' ? [] : normalizedPath.split('/').filter(Boolean);
+  const breadcrumbs = [{ name: 'root', path: '/' }, ...segments.map((segment, index) => ({
+    name: segment,
+    path: '/' + segments.slice(0, index + 1).join('/'),
+  }))];
+
   return {
     root: rootReal,
     path: normalizedPath,
     resolvedPath: targetReal,
+    breadcrumbs,
     entries,
-    truncated: filtered.length > limit,
+    truncated: allEntries.length > offset + limit,
+    total: allEntries.length,
     limit,
+    offset,
+    sortBy,
+    order,
   };
 }

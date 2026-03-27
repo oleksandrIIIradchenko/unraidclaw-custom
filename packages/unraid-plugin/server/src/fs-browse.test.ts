@@ -62,4 +62,18 @@ describe('fs-browse', () => {
     const result = await listDirectory(root, '/', { dirsOnly: true });
     expect(result.entries.every((e) => e.type === 'directory')).toBe(true);
   });
+
+  it('returns breadcrumbs, sorting and pagination metadata', async () => {
+    const root = makeTree();
+    writeFileSync(join(root, 'small.txt'), '1');
+    writeFileSync(join(root, 'large.txt'), '123456789');
+    const result = await listDirectory(root, '/', { sortBy: 'size', order: 'desc', limit: 2, offset: 1, includeHidden: true });
+    expect(result.breadcrumbs).toEqual([{ name: 'root', path: '/' }]);
+    expect(result.limit).toBe(2);
+    expect(result.offset).toBe(1);
+    expect(result.sortBy).toBe('size');
+    expect(result.order).toBe('desc');
+    expect(result.total).toBeGreaterThan(2);
+    expect(result.entries.length).toBe(2);
+  });
 });

@@ -95,7 +95,7 @@ export function registerDiskRoutes(app: FastifyInstance, gql: GraphQLClient): vo
   });
 
   // Browse disk contents (read-only)
-  app.get<{ Params: { id: string }; Querystring: { path?: string; limit?: string; includeHidden?: string; dirsOnly?: string } }>("/api/disks/:id/browse", {
+  app.get<{ Params: { id: string }; Querystring: { path?: string; limit?: string; offset?: string; includeHidden?: string; dirsOnly?: string; sortBy?: 'name' | 'size' | 'mtime'; order?: 'asc' | 'desc' } }>("/api/disks/:id/browse", {
     preHandler: requirePermission(Resource.DISK, Action.READ),
     handler: async (req, reply) => {
       const data = await gql.query<{
@@ -116,8 +116,11 @@ export function registerDiskRoutes(app: FastifyInstance, gql: GraphQLClient): vo
       try {
         const result = await listDirectory(`/mnt/${disk.name}`, req.query.path ?? "/", {
           limit: req.query.limit ? Number(req.query.limit) : undefined,
+          offset: req.query.offset ? Number(req.query.offset) : undefined,
           includeHidden: req.query.includeHidden === "true",
           dirsOnly: req.query.dirsOnly === "true",
+          sortBy: req.query.sortBy,
+          order: req.query.order,
         });
         return reply.send({ ok: true, data: result });
       } catch (err) {
