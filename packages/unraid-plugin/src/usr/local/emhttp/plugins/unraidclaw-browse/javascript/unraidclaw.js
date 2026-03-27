@@ -56,7 +56,6 @@ function occServiceControl(action) {
       } else if (xhr.responseText === '') {
         alert('Empty response from service control - PHP may not be executing');
       }
-      location.reload();
     }
   };
   xhr.send();
