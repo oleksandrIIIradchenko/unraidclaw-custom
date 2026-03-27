@@ -12,6 +12,7 @@
   <img src="https://img.shields.io/badge/unraid-7.0%2B-orange" alt="Unraid 7.0+" />
   <img src="https://img.shields.io/badge/node-22%2B-green" alt="Node 22+" />
   <a href="https://github.com/oleksandrIIIradchenko/unraidclaw-browse/releases"><img src="https://img.shields.io/github/v/release/oleksandrIIIradchenko/unraidclaw-browse" alt="Release" /></a>
+  <a href="https://donatello.to/oleksandrIIIradchenko"><img src="https://img.shields.io/badge/Donate-Buy%20me%20a%20coffee-ff5f5f5?style=flat&logo=buy-me-a-coffee" alt="Donate" /></a>
 </p>
 
 ---
@@ -100,6 +101,14 @@ Returns directory listing with file sizes and modification times.
 ## Original UnraidClaw Documentation
 
 For full API reference, OpenClaw plugin setup, and architecture details, see the [original UnraidClaw README](https://github.com/emaspa/unraidclaw).
+
+---
+
+## 💛 Support
+
+If this plugin was useful to you, consider buying me a coffee:
+
+👉 https://donatello.to/oleksandrIIIradchenko
 
 ---
 
