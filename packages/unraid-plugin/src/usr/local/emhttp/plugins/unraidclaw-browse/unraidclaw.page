@@ -63,7 +63,7 @@ $logFile = "/boot/config/plugins/{$plugin}/activity.jsonl";
       <span class="occ-label">API Key:</span>
       <span><?=empty($cfg['API_KEY_HASH']) ? '<em>Not configured</em>' : 'Configured'?></span>
     </div>
-    <div class="occ-actions">
+    <div class="occ-actions" id="occ-service-actions">
       <?php if ($isRunning): ?>
         <button class="occ-btn occ-btn-danger" onclick="occServiceControl('stop')">Stop</button>
         <button class="occ-btn occ-btn-warning" onclick="occServiceControl('restart')">Restart</button>

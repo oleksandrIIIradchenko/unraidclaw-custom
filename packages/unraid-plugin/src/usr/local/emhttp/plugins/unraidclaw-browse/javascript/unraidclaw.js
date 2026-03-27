@@ -54,14 +54,19 @@ function occServiceControl(action) {
           if (resp.returnCode !== 0) {
             alert('Service ' + action + ' failed (code ' + resp.returnCode + '):\n' + resp.output);
           } else {
+            var isRunning = action !== 'stop';
             var badge = document.getElementById('occ-service-status');
             if (badge) {
-              if (action === 'stop') {
-                badge.textContent = 'Stopped';
-                badge.className = 'occ-badge occ-badge-stopped';
+              badge.textContent = isRunning ? 'Running' : 'Stopped';
+              badge.className = isRunning ? 'occ-badge occ-badge-ok' : 'occ-badge occ-badge-stopped';
+            }
+            var actions = document.getElementById('occ-service-actions');
+            if (actions) {
+              if (isRunning) {
+                actions.innerHTML = '<button class="occ-btn occ-btn-danger" onclick="occServiceControl(\'stop\')">Stop</button>' +
+                  '<button class="occ-btn occ-btn-warning" onclick="occServiceControl(\'restart\')">Restart</button>';
               } else {
-                badge.textContent = 'Running';
-                badge.className = 'occ-badge occ-badge-ok';
+                actions.innerHTML = '<button class="occ-btn occ-btn-success" onclick="occServiceControl(\'start\')">Start</button>';
               }
             }
           }
