@@ -17,6 +17,7 @@ function respond(array $data, int $code = 200): void {
 try {
     $plugin = 'unraidclaw-browse';
     $cfgFile = '/boot/config/plugins/' . $plugin . '/' . $plugin . '.cfg';
+    $action = $_GET['action'] ?? $_POST['action'] ?? 'generate';
 
     if ($action !== 'generate' && $action !== 'custom') {
         respond(['success' => false, 'error' => 'Unsupported action'], 400);
