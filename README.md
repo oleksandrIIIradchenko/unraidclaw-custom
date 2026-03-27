@@ -110,6 +110,8 @@ If this plugin was useful to you, consider buying me a coffee:
 
 👉 https://donatello.to/oleksandrIIIradchenko
 
+<img src="donate-qr.png" width="200" alt="Donate QR Code" />
+
 ---
 
 ## License
