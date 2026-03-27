@@ -38,6 +38,11 @@ describe('fs-browse', () => {
     await expect(safeResolveUnderRoot(root, '/escape-link')).rejects.toMatchObject({ code: 'INVALID_PATH' });
   });
 
+  it('rejects overly long browse paths', async () => {
+    const root = makeTree();
+    await expect(safeResolveUnderRoot(root, '/' + 'a'.repeat(5000))).rejects.toMatchObject({ code: 'INVALID_PATH' });
+  });
+
   it('lists directories first and hides dotfiles by default', async () => {
     const root = makeTree();
     const result = await listDirectory(root, '/');

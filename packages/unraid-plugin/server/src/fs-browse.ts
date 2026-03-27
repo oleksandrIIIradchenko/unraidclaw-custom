@@ -15,6 +15,8 @@ export interface BrowseEntry {
   mtime: string | null;
 }
 
+const MAX_BROWSE_PATH_LENGTH = 4096;
+
 function ensureInsideRoot(rootReal: string, targetReal: string): boolean {
   if (targetReal === rootReal) return true;
   const rel = relative(rootReal, targetReal);
@@ -23,7 +25,13 @@ function ensureInsideRoot(rootReal: string, targetReal: string): boolean {
 
 export async function safeResolveUnderRoot(root: string, requestedPath = "/"): Promise<{ rootReal: string; targetReal: string; normalizedPath: string; }> {
   const rootReal = await realpath(root);
-  const rawSegments = String(requestedPath ?? "/").replace(/\\/g, "/").split("/").filter(Boolean);
+  const rawPath = String(requestedPath ?? "/");
+  if (rawPath.length > MAX_BROWSE_PATH_LENGTH) {
+    const err = new Error(`Path is too long (max ${MAX_BROWSE_PATH_LENGTH} chars)`);
+    (err as Error & { code?: string }).code = "INVALID_PATH";
+    throw err;
+  }
+  const rawSegments = rawPath.replace(/\\/g, "/").split("/").filter(Boolean);
   if (rawSegments.includes("..")) {
     const err = new Error("Path traversal is not allowed");
     (err as Error & { code?: string }).code = "INVALID_PATH";
