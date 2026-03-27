@@ -55,10 +55,18 @@ All other features are identical to the original UnraidClaw.
 
 ## Installation
 
-### Manual install
+### Via WebGUI
+1. Go to **Settings → Plugin Management**
+2. Click **Install** and paste this URL:
+```
+https://raw.githubusercontent.com/oleksandrIIIradchenko/unraidclaw-browse/main/packages/unraid-plugin/unraidclaw-browse.plg
+```
+
+### Via Console
 
 ```bash
-plugin install https://raw.githubusercontent.com/oleksandrIIIradchenko/unraidclaw-browse/main/packages/unraid-plugin/unraidclaw-browse.plg
+wget https://raw.githubusercontent.com/oleksandrIIIradchenko/unraidclaw-browse/main/packages/unraid-plugin/unraidclaw-browse.plg -O /tmp/unraidclaw-browse.plg
+installplg /tmp/unraidclaw-browse.plg
 ```
 
 ### Setup
