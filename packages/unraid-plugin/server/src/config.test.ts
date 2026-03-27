@@ -91,4 +91,24 @@ describe('config', () => {
     const raw = JSON.parse(readFileSync(file, 'utf-8'));
     expect(raw['docker:read']).toBe(false);
   });
+
+  it('falls back to default matrix when permissions file is invalid JSON', async () => {
+    const dir = makeTempDir();
+    process.env.FLASH_BASE = dir;
+    writeFileSync(join(dir, 'permissions.json'), '{not-json');
+    const mod = await import('./config.js');
+    const matrix = mod.loadPermissions();
+    expect(matrix['docker:read']).toBe(false);
+    expect(matrix['array:update']).toBe(false);
+  });
+
+  it('ignores unknown permission keys from permissions file', async () => {
+    const dir = makeTempDir();
+    process.env.FLASH_BASE = dir;
+    writeFileSync(join(dir, 'permissions.json'), JSON.stringify({ 'docker:read': true, 'fake:perm': true }, null, 2));
+    const mod = await import('./config.js');
+    const matrix = mod.loadPermissions();
+    expect(matrix['docker:read']).toBe(true);
+    expect((matrix)['fake:perm']).toBeUndefined();
+  });
 });
