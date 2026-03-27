@@ -28,13 +28,7 @@ if (!in_array($action, $allowed, true)) {
 
 $output = [];
 $returnCode = 0;
-exec("/etc/rc.d/rc.{$plugin} {$action} 2>&1", $output, $returnCode);
-$serviceState = getServiceState($plugin);
-
-$success = $returnCode === 0;
-if (!$success) {
-    http_response_code(500);
-}
+exec("/etc/rc.d/rc.unraidclaw-browse {$action} 2>&1", $output, $returnCode);
 
 echo json_encode([
     'success' => $success,

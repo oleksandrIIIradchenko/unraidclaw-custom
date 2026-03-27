@@ -2,8 +2,14 @@
 header('Content-Type: application/json');
 
 $permFile = '/boot/config/plugins/unraidclaw-browse/permissions.json';
-$raw = $_GET['data'] ?? file_get_contents('php://input');
-$input = json_decode($raw ?? '', true);
+
+// Accept JSON from query param (GET) or body (POST)
+$raw = $_GET['data'] ?? null;
+if ($raw === null) {
+    $raw = file_get_contents('php://input');
+}
+
+$input = json_decode($raw, true);
 
 if (!is_array($input)) {
     http_response_code(400);

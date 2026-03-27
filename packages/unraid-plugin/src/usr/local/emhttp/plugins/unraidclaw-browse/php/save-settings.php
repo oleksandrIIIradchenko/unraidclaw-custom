@@ -1,6 +1,8 @@
 <?php
+/* Save settings - supports GET (AJAX) and POST (form) */
 $plugin = 'unraidclaw-browse';
 $cfgFile = "/boot/config/plugins/${plugin}/${plugin}.cfg";
+
 $fields = ['SERVICE', 'PORT', 'HOST', 'GRAPHQL_URL', 'UNRAID_API_KEY', 'MAX_LOG_SIZE'];
 $input = !empty($_GET) ? $_GET : $_POST;
 $isAjax = isset($input['ajax']);
