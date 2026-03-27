@@ -4,7 +4,7 @@
 
 :root {
   --occ-bg: #1a1a2e;
-  --occ-bg-elevated: #20243d;
+  --occ-bg-elevated: #2a2f4a;
   --occ-bg-soft: #252a45;
   --occ-bg-hover: #2d3354;
   --occ-border: rgba(255, 255, 255, 0.1);
@@ -565,17 +565,7 @@ select {
   background: transparent !important;
 }
 
-.tablesorter tbody tr:nth-child(odd) td,
-.occ-recent-table tbody tr:nth-child(odd) td,
-#occ-log-table tbody tr:nth-child(odd) td {
-  background: rgba(255, 255, 255, 0.04) !important;
-}
 
-.tablesorter tbody tr:nth-child(even) td,
-.occ-recent-table tbody tr:nth-child(even) td,
-#occ-log-table tbody tr:nth-child(even) td {
-  background: rgba(12, 15, 29, 0.18) !important;
-}
 
 .tablesorter tbody tr:hover td,
 .occ-recent-table tbody tr:hover td,

@@ -138,8 +138,9 @@ function occSaveCustomKey() {
         try {
           var resp = JSON.parse(xhr.responseText);
           if (resp.success) {
-            statusEl.innerHTML = '<span style="color: #51cf66;">✅ Key saved successfully!</span>';
+            statusEl.innerHTML = '<span style="color: #51cf66;">✅ Key saved successfully! Reloading...</span>';
             document.getElementById('occ-custom-key').value = '';
+            setTimeout(function() { location.reload(); }, 1000);
           } else {
             statusEl.innerHTML = '<span style="color: #ff6b6b;">❌ Error: ' + (resp.error || 'Unknown') + '</span>';
           }
