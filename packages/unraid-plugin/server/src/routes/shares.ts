@@ -123,6 +123,7 @@ export function registerShareRoutes(app: FastifyInstance, gql: GraphQLClient): v
       } catch (err) {
         const e = err as Error & { code?: string };
         const code = e.code ?? "BROWSE_ERROR";
+        (req as typeof req & { auditReason?: string }).auditReason = code;
         const status = code === "NOT_DIRECTORY" ? 400 : code === "INVALID_PATH" ? 400 : code === "ENOENT" ? 404 : 500;
         return reply.code(status).send({
           ok: false,

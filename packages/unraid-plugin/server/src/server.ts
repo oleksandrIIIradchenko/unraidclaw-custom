@@ -85,6 +85,7 @@ export function createServer(config: ServerConfig, httpsOpts?: { cert: Buffer; k
   app.addHook("onRequest", async (request, reply) => {
     if (!request.url.includes('/browse')) return;
     if (isBrowseRateLimited(request.ip)) {
+      (request as typeof request & { auditReason?: string }).auditReason = 'BROWSE_RATE_LIMITED';
       return reply.code(429).send({
         ok: false,
         error: { code: 'BROWSE_RATE_LIMITED', message: 'Too many browse requests. Try again later.' },
@@ -110,6 +111,7 @@ export function createServer(config: ServerConfig, httpsOpts?: { cert: Buffer; k
       statusCode: reply.statusCode,
       durationMs: Math.round(reply.elapsedTime),
       ip: request.ip,
+      reason: (request as typeof request & { auditReason?: string }).auditReason,
     };
     activityLogger.log(entry);
   });
