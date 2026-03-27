@@ -3,18 +3,18 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "unraidclaw-browse">
 <!ENTITY author    "emaspa">
-<!ENTITY version   "0.1.28-browse1">
+<!ENTITY version   "0.1.28-browse4">
 <!ENTITY launch    "Settings/unraidclaw-browse">
-<!ENTITY repo      "oleksandrIIIradchenko/unraidclaw-custom">
+<!ENTITY repo      "oleksandrIIIradchenko/unraidclaw-browse">
 <!ENTITY pluginURL "https://raw.githubusercontent.com/&repo;/main/packages/unraid-plugin/unraidclaw-browse.plg">
 <!ENTITY pkgURL    "https://github.com/&repo;/releases/download/v&version;/&name;-&version;-x86_64-1.txz">
-<!ENTITY md5       "f8e54b82dc5b9e66470eb559e3e60359">
+<!ENTITY md5       "be1608e5e3cc738789670008536a3e8b">
 ]>
 
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.12.0" max="7.99.99" support="https://forums.unraid.net/topic/197498-plugin-support-unraidclaw-browse-ai-agent-gateway-with-permission-control/" description="Permission-enforcing REST API gateway that lets AI agents manage your Unraid server with fine-grained access control.">
 
 <CHANGES>
-### 0.1.28-browse1
+### 0.1.28-browse4
 - Add read-only browse APIs for disks and shares
 - Add OpenClaw tools unraid_disk_browse and unraid_share_browse
 
