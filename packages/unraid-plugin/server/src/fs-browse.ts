@@ -23,8 +23,17 @@ function ensureInsideRoot(rootReal: string, targetReal: string): boolean {
 
 export async function safeResolveUnderRoot(root: string, requestedPath = "/"): Promise<{ rootReal: string; targetReal: string; normalizedPath: string; }> {
   const rootReal = await realpath(root);
-  const cleaned = requestedPath && requestedPath !== "/" ? normalize(requestedPath).replace(/^\/+/, "") : "";
-  if (cleaned.split(sep).includes("..")) {
+  const rawSegments = String(requestedPath ?? "/").replace(/\\/g, "/").split("/").filter(Boolean);
+  if (rawSegments.includes("..")) {
+    const err = new Error("Path traversal is not allowed");
+    (err as Error & { code?: string }).code = "INVALID_PATH";
+    throw err;
+  }
+  const normalizedInput = requestedPath && requestedPath !== "/"
+    ? normalize(`/${requestedPath}`).replace(/^\/+/, "")
+    : "";
+  const cleaned = normalizedInput === "." ? "" : normalizedInput;
+  if (cleaned === ".." || cleaned.startsWith(`..${sep}`) || cleaned.split(sep).includes("..")) {
     const err = new Error("Path traversal is not allowed");
     (err as Error & { code?: string }).code = "INVALID_PATH";
     throw err;
